@@ -1,0 +1,81 @@
+﻿<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Facemash</title>
+
+    <style>
+        body{
+            font-family:tahoma;
+            text-align:center;
+            background:#f5f5f5;
+        }
+
+        h1{
+            margin-top:25px;
+        }
+
+        .photos{
+            display:flex;
+            justify-content:center;
+            gap:40px;
+            margin-top:40px;
+        }
+
+        button{
+            border:none;
+            background:none;
+            cursor:pointer;
+            padding:0;
+        }
+
+        img{
+            width:350px;
+            height:500px;
+            object-fit:cover;
+            border-radius:12px;
+            transition:.25s;
+            box-shadow:0 0 15px rgba(0,0,0,.2);
+        }
+
+        img:hover{
+            transform:scale(1.03);
+        }
+    </style>
+
+</head>
+
+<body>
+
+<h1>Facemash</h1>
+
+<div class="photos">
+
+    <form action="/vote" method="POST">
+
+        <input type="hidden" name="winner" value="{{ img1 }}">
+        <input type="hidden" name="loser" value="{{ img2 }}">
+
+        <button type="submit">
+            <img src="/image/{{ img1 }}">
+        </button>
+
+    </form>
+
+
+    <form action="/vote" method="POST">
+
+        <input type="hidden" name="winner" value="{{ img2 }}">
+        <input type="hidden" name="loser" value="{{ img1 }}">
+
+        <button type="submit">
+            <img src="/image/{{ img2 }}">
+        </button>
+
+    </form>
+
+</div>
+
+</body>
+</html>
