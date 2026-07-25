@@ -1,19 +1,71 @@
-﻿from flask import Flask, render_template, send_from_directory, request, redirect
+from flask import Flask, render_template, request, redirect
 import os
 import random
+import sqlite3
+from datetime import datetime
 
 app = Flask(__name__)
+DB_NAME = "facemash.db"
 
-# مسیر پوشه static (سازگار با Render و ویندوز)
+def init_db():
+    conn = sqlite3.connect(DB_NAME)
+    cursor = conn.cursor()
+
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS visitors (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        ip TEXT,
+        browser TEXT,
+        platform TEXT,
+        visit_time TEXT
+    )
+    """)
+
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS votes (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        winner TEXT,
+        loser TEXT,
+        vote_time TEXT
+    )
+    """)
+
+    conn.commit()
+    conn.close()
+
+init_db()
+# مسیر پوشه static
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 IMAGE_FOLDER = os.path.join(BASE_DIR, "static")
 
-# ذخیره امتیاز عکس‌ها
+# امتیاز عکس‌ها
 scores = {}
+
+# لیست بازدیدکننده‌ها
+visitors = []
+
+# تعداد کل بازدیدها
+total_visits = 0
+
 
 @app.route("/")
 def home():
-    # اگر پوشه static وجود نداشت
+    global total_visits
+
+    # ثبت بازدید
+    total_visits += 1
+
+    visitors.append({
+        "ip": request.remote_addr,
+        "browser": request.user_agent.browser,
+        "platform": request.user_agent.platform,
+        "time": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    })
+
+    # فقط 100 بازدید آخر نگه داشته شود
+    if len(visitors) > 100:
+        visitors.pop(0)
+
     if not os.path.exists(IMAGE_FOLDER):
         return f"Folder not found: {IMAGE_FOLDER}"
 
@@ -26,6 +78,22 @@ def home():
         return "حداقل دو عکس داخل پوشه static قرار بده."
 
     img1, img2 = random.sample(images, 2)
+
+    conn = sqlite3.connect(DB_NAME)
+cursor = conn.cursor()
+
+cursor.execute("""
+INSERT INTO visitors (ip, browser, platform, visit_time)
+VALUES (?, ?, ?, ?)
+""", (
+    request.remote_addr,
+    str(request.user_agent.browser),
+    str(request.user_agent.platform),
+    datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+))
+
+conn.commit()
+conn.close()
 
     return render_template(
         "index.html",
@@ -43,4 +111,66 @@ def vote():
     scores[loser] = scores.get(loser, 0)
 
     print("Winner:", winner)
-    print("Loser
+    print("Loser :", loser)
+conn = sqlite3.connect(DB_NAME)
+cursor = conn.cursor()
+
+cursor.execute("""
+INSERT INTO votes (winner, loser, vote_time)
+VALUES (?, ?, ?)
+""", (
+    winner,
+    loser,
+    datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+))
+
+conn.commit()
+conn.close()
+    return redirect("/")
+
+
+@app.route("/admin")
+@app.route("/admin")
+def admin():
+
+    conn = sqlite3.connect(DB_NAME)
+    cursor = conn.cursor()
+
+    # تعداد کل بازدیدها
+    cursor.execute("SELECT COUNT(*) FROM visitors")
+    total_visits = cursor.fetchone()[0]
+
+    # تعداد کل رأی‌ها
+    cursor.execute("SELECT COUNT(*) FROM votes")
+    total_votes = cursor.fetchone()[0]
+
+    # آخرین 50 بازدیدکننده
+    cursor.execute("""
+        SELECT ip, browser, platform, visit_time
+        FROM visitors
+        ORDER BY id DESC
+        LIMIT 50
+    """)
+    visitors = cursor.fetchall()
+
+    # رتبه‌بندی عکس‌ها
+    cursor.execute("""
+        SELECT winner, COUNT(*) AS score
+        FROM votes
+        GROUP BY winner
+        ORDER BY score DESC
+    """)
+    ranking = cursor.fetchall()
+
+    conn.close()
+
+    return render_template(
+        "admin.html",
+        total_visits=total_visits,
+        total_votes=total_votes,
+        visitors=visitors,
+        ranking=ranking
+    )
+
+if __name__ == "__main__":
+    app.run(debug=True)
