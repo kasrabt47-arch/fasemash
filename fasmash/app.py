@@ -52,19 +52,7 @@ total_visits = 0
 def home():
     global total_visits
 
-    # ثبت بازدید
     total_visits += 1
-
-    visitors.append({
-        "ip": request.remote_addr,
-        "browser": request.user_agent.browser,
-        "platform": request.user_agent.platform,
-        "time": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    })
-
-    # فقط 100 بازدید آخر نگه داشته شود
-    if len(visitors) > 100:
-        visitors.pop(0)
 
     if not os.path.exists(IMAGE_FOLDER):
         return f"Folder not found: {IMAGE_FOLDER}"
@@ -79,21 +67,22 @@ def home():
 
     img1, img2 = random.sample(images, 2)
 
+    # ذخیره بازدید در دیتابیس
     conn = sqlite3.connect(DB_NAME)
-cursor = conn.cursor()
+    cursor = conn.cursor()
 
-cursor.execute("""
-INSERT INTO visitors (ip, browser, platform, visit_time)
-VALUES (?, ?, ?, ?)
-""", (
-    request.remote_addr,
-    str(request.user_agent.browser),
-    str(request.user_agent.platform),
-    datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-))
+    cursor.execute("""
+        INSERT INTO visitors (ip, browser, platform, visit_time)
+        VALUES (?, ?, ?, ?)
+    """, (
+        request.remote_addr,
+        str(request.user_agent.browser),
+        str(request.user_agent.platform),
+        datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    ))
 
-conn.commit()
-conn.close()
+    conn.commit()
+    conn.close()
 
     return render_template(
         "index.html",
@@ -112,24 +101,26 @@ def vote():
 
     print("Winner:", winner)
     print("Loser :", loser)
-conn = sqlite3.connect(DB_NAME)
-cursor = conn.cursor()
 
-cursor.execute("""
-INSERT INTO votes (winner, loser, vote_time)
-VALUES (?, ?, ?)
-""", (
-    winner,
-    loser,
-    datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-))
+    # ذخیره رأی در دیتابیس
+    conn = sqlite3.connect(DB_NAME)
+    cursor = conn.cursor()
 
-conn.commit()
-conn.close()
+    cursor.execute("""
+        INSERT INTO votes (winner, loser, vote_time)
+        VALUES (?, ?, ?)
+    """, (
+        winner,
+        loser,
+        datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    ))
+
+    conn.commit()
+    conn.close()
+
     return redirect("/")
 
 
-@app.route("/admin")
 @app.route("/admin")
 def admin():
 
