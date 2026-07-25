@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="fa" dir="rtl">
 
 <head>
@@ -46,36 +46,47 @@
 
 </head>
 
+
 <body>
 
 <h1>Facemash</h1>
 
+
 <div class="photos">
 
-    <form action="/vote" method="POST">
 
-        <input type="hidden" name="winner" value="{{ img1 }}">
-        <input type="hidden" name="loser" value="{{ img2 }}">
+<form action="/vote" method="POST">
 
-        <button type="submit">
-            <img src="/image/{{ img1 }}">
-        </button>
+    <input type="hidden" name="winner" value="{{ img1 }}">
+    <input type="hidden" name="loser" value="{{ img2 }}">
 
-    </form>
+    <button type="submit">
+
+        <img src="{{ url_for('static', filename='images/' + img1) }}">
+
+    </button>
+
+</form>
 
 
-    <form action="/vote" method="POST">
 
-        <input type="hidden" name="winner" value="{{ img2 }}">
-        <input type="hidden" name="loser" value="{{ img1 }}">
+<form action="/vote" method="POST">
 
-        <button type="submit">
-            <img src="/image/{{ img2 }}">
-        </button>
+    <input type="hidden" name="winner" value="{{ img2 }}">
+    <input type="hidden" name="loser" value="{{ img1 }}">
 
-    </form>
+    <button type="submit">
+
+        <img src="{{ url_for('static', filename='images/' + img2) }}">
+
+    </button>
+
+</form>
+
 
 </div>
 
+
 </body>
+
 </html>
