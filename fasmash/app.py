@@ -71,16 +71,23 @@ def home():
     conn = sqlite3.connect(DB_NAME)
     cursor = conn.cursor()
 
+    ip = request.remote_addr
+
+# بررسی می‌کند این IP قبلاً ثبت شده یا نه
+cursor.execute("SELECT id FROM visitors WHERE ip = ?", (ip,))
+exists = cursor.fetchone()
+
+# فقط اگر IP جدید بود ذخیره می‌شود
+if not exists:
     cursor.execute("""
         INSERT INTO visitors (ip, browser, platform, visit_time)
         VALUES (?, ?, ?, ?)
     """, (
-        request.remote_addr,
+        ip,
         str(request.user_agent.browser),
         str(request.user_agent.platform),
         datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     ))
-
     conn.commit()
     conn.close()
 
@@ -137,10 +144,9 @@ def admin():
 
     # آخرین 50 بازدیدکننده
     cursor.execute("""
-        SELECT ip, browser, platform, visit_time
+        SELECT DISTINCT ip, browser, platform, visit_time
         FROM visitors
         ORDER BY id DESC
-        LIMIT 50
     """)
     visitors = cursor.fetchall()
 
