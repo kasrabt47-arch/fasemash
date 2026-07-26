@@ -1,130 +1,61 @@
-﻿<!DOCTYPE html>
-<html lang="fa" dir="rtl">
+<!DOCTYPE html>
+<html lang="fa">
 
 <head>
-    <meta charset="UTF-8">
-    <title>Facemash Admin</title>
+<meta charset="UTF-8">
+<title>FACEMASH ADMIN</title>
 
-    <style>
+<style>
 
-        body{
-            margin:0;
-            background:#000;
-            color:#00ff66;
-            font-family:Consolas, monospace;
-            padding:30px;
-        }
+body{
+    background:#000;
+    color:#00ff66;
+    font-family:Consolas,monospace;
+    font-size:18px;
+    padding:30px;
+}
 
-        h1{
-            color:#00ff66;
-            border-bottom:1px solid #00ff66;
-            padding-bottom:15px;
-        }
+h1{
+    color:#00ff66;
+    margin-bottom:30px;
+}
 
-        .box{
-            border:1px solid #00ff66;
-            padding:15px;
-            margin-top:20px;
-        }
+.header{
+    display:grid;
+    grid-template-columns:220px 320px 220px;
+    font-weight:bold;
+    margin-bottom:20px;
+}
 
-        table{
-            width:100%;
-            border-collapse:collapse;
-            margin-top:10px;
-        }
+.row{
+    display:grid;
+    grid-template-columns:220px 320px 220px;
+    margin-bottom:10px;
+}
 
-        th,td{
-            border:1px solid #00ff66;
-            padding:8px;
-            text-align:center;
-        }
-
-        th{
-            background:#003300;
-        }
-
-    </style>
+</style>
 
 </head>
 
 <body>
 
-<h1>FACEMASH ADMIN PANEL</h1>
+<h1>FACEMASH LIVE</h1>
 
-<div class="box">
-
-<h2>آمار سایت</h2>
-
-<p>کل بازدیدها :
-<b>{{ total_visits }}</b></p>
-
-<p>کل رأی‌ها :
-<b>{{ total_votes }}</b></p>
-
+<div class="header">
+    <div>NAME</div>
+    <div>IP ADDRESS</div>
+    <div>COUNTRY</div>
 </div>
-
-
-<div class="box">
-
-<h2>آخرین بازدیدکننده‌ها</h2>
-
-<table>
-
-<tr>
-
-<th>زمان</th>
-<th>IP</th>
-<th>مرورگر</th>
-<th>سیستم عامل</th>
-
-</tr>
 
 {% for user in visitors %}
 
-<tr>
-
-<td>{{ user[3]}}</td>
-<td>{{ user[0] }}</td>
-<td>{{ user[1] }}</td>
-<td>{{ user[2] }}</td>
-
-</tr>
-
-{% endfor %}
-
-</table>
-
+<div class="row">
+    <div>{{ user[1] }}</div>
+    <div>{{ user[0] }}</div>
+    <div>{{ user[2] }}</div>
 </div>
 
-
-
-<div class="box">
-
-<h2>رتبه‌بندی عکس‌ها</h2>
-
-<table>
-
-<tr>
-
-<th>عکس</th>
-<th>امتیاز</th>
-
-</tr>
-
-{% for photo,score in ranking %}
-
-<tr>
-
-<td>{{ photo }}</td>
-<td>{{ score }}</td>
-
-</tr>
-
 {% endfor %}
-
-</table>
-
-</div>
 
 </body>
 
