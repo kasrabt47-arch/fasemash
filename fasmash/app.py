@@ -51,15 +51,26 @@ total_visits = 0
 @app.route("/")
 def home():
 
-    global total_visits
+    if not os.path.exists(IMAGE_FOLDER):
+        return f"Folder not found: {IMAGE_FOLDER}"
 
-    total_visits += 1
+    images = [
+        img for img in os.listdir(IMAGE_FOLDER)
+        if img.lower().endswith((".jpg", ".jpeg", ".png"))
+    ]
+
+    if len(images) < 2:
+        return "حداقل دو عکس داخل پوشه static قرار بده."
+
+    # انتخاب دو عکس تصادفی
+    img1, img2 = random.sample(images, 2)
 
     conn = sqlite3.connect(DB_NAME)
     cursor = conn.cursor()
 
     ip = request.remote_addr
 
+    # فقط اگر این IP قبلاً ثبت نشده باشد
     cursor.execute("SELECT id FROM visitors WHERE ip = ?", (ip,))
     exists = cursor.fetchone()
 
