@@ -50,45 +50,31 @@ total_visits = 0
 
 @app.route("/")
 def home():
+
     global total_visits
 
     total_visits += 1
 
-    if not os.path.exists(IMAGE_FOLDER):
-        return f"Folder not found: {IMAGE_FOLDER}"
-
-    images = [
-        img for img in os.listdir(IMAGE_FOLDER)
-        if img.lower().endswith((".jpg", ".jpeg", ".png"))
-    ]
-
-    if len(images) < 2:
-        return "حداقل دو عکس داخل پوشه static قرار بده."
-
-    img1, img2 = random.sample(images, 2)
-
-    # ذخیره بازدید در دیتابیس
     conn = sqlite3.connect(DB_NAME)
     cursor = conn.cursor()
 
     ip = request.remote_addr
 
-# بررسی می‌کند این IP قبلاً ثبت شده یا نه
-cursor.execute("SELECT id FROM visitors WHERE ip = ?", (ip,))
-exists = cursor.fetchone()
+    cursor.execute("SELECT id FROM visitors WHERE ip = ?", (ip,))
+    exists = cursor.fetchone()
 
-# فقط اگر IP جدید بود ذخیره می‌شود
-if not exists:
-    cursor.execute("""
-        INSERT INTO visitors (ip, browser, platform, visit_time)
-        VALUES (?, ?, ?, ?)
-    """, (
-        ip,
-        str(request.user_agent.browser),
-        str(request.user_agent.platform),
-        datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    ))
-    conn.commit()
+    if not exists:
+        cursor.execute("""
+            INSERT INTO visitors (ip, browser, platform, visit_time)
+            VALUES (?, ?, ?, ?)
+        """, (
+            ip,
+            str(request.user_agent.browser),
+            str(request.user_agent.platform),
+            datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        ))
+        conn.commit()
+
     conn.close()
 
     return render_template(
