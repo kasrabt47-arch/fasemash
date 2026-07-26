@@ -124,30 +124,26 @@ def vote():
 
     return redirect("/")
 
-
 @app.route("/admin")
 def admin():
 
     conn = sqlite3.connect(DB_NAME)
     cursor = conn.cursor()
 
-    # تعداد کل بازدیدها
-    cursor.execute("SELECT COUNT(*) FROM visitors")
+    cursor.execute("SELECT COUNT(DISTINCT ip) FROM visitors")
     total_visits = cursor.fetchone()[0]
 
-    # تعداد کل رأی‌ها
     cursor.execute("SELECT COUNT(*) FROM votes")
     total_votes = cursor.fetchone()[0]
 
-    # آخرین 50 بازدیدکننده
     cursor.execute("""
-        SELECT DISTINCT ip, browser, platform, visit_time
+        SELECT ip, browser, platform, visit_time
         FROM visitors
+        GROUP BY ip
         ORDER BY id DESC
     """)
     visitors = cursor.fetchall()
 
-    # رتبه‌بندی عکس‌ها
     cursor.execute("""
         SELECT winner, COUNT(*) AS score
         FROM votes
@@ -165,6 +161,7 @@ def admin():
         visitors=visitors,
         ranking=ranking
     )
+
 
 if __name__ == "__main__":
     app.run(debug=True)
